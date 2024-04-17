@@ -3,6 +3,7 @@ import bcryptjs from "bcryptjs"; //libreria que permitira la encriptacion de con
 import jsonwebtoken from "jsonwebtoken";//maneja de contraseña para login tipo token 
 import dotenv from "dotenv";//libreria para variables de entorno 
 import connection from "./db.js";
+import { response } from 'express';
 
 // Aquí puedes utilizar la conexión a la base de datos
 dotenv.config();
@@ -29,7 +30,6 @@ async function login(req, res) {
             }
 
             //comparacion de la contraseña con bcrypts
-
             const usuarioRevisar = results[0];
             bcryptjs.compare(password, usuarioRevisar.password, (compareError, logincorrecto) => {
                 if (compareError) {
@@ -53,7 +53,7 @@ async function login(req, res) {
                 };
 
                 res.cookie("jwt", token, cookieOption);
-                res.send({ status: "ok", message: "Usuario loggeado", redirect: "/admin" });
+                res.send({ status: "ok", message: "Usuario loggeado", token, redirect: "/home" }); // Incluir el token en la respuesta
             });
         });
     } catch (error) {
@@ -99,7 +99,7 @@ async function register(req, res) {
                 }
 
                 // Envía la respuesta de éxito
-                res.status(201).send({ status: "ok", message: `Usuario ${user} agregado`, redirect: "/" });
+                res.status(201).send({ status: "ok", message: `Usuario ${user} agregado`, redirect: "/login" });
             });
         });
     } catch (error) {
@@ -107,8 +107,27 @@ async function register(req, res) {
         res.status(500).send({ status: "Error", message: "Error interno del servidor" });
     }
 }
+
+
+async function logout(req, res = response) {
+    try {
+        // Eliminar la cookie jwt del cliente
+        res.clearCookie("jwt");
+
+        // Envía una respuesta exitosa
+        res.status(200).send({ status: "ok", message: "Usuario deslogueado exitosamente" });
+    } catch (error) {
+        console.error("Error al cerrar sesión:", error);
+        res.status(500).send({ status: "Error", message: "Error interno del servidor" });
+    }
+}
+
+// Exporta la función de logout para poder ser utilizada en otros archivos
+
+
 //exporta los metodos para poder ser ejecutados en otros archivos
 export const methods = {
     login,
-    register
+    register,
+    logout
 }
