@@ -53,7 +53,13 @@ async function login(req, res) {
                 };
 
                 res.cookie("jwt", token, cookieOption);
-                res.send({ status: "ok", message: "Usuario loggeado", token, redirect: "/home" }); // Incluir el token en la respuesta
+                if (usuarioRevisar.modo === 1) {
+                    // Si el modo es 1, redirigir al admin
+                    res.send({ status: "ok", message: "Usuario loggeado", token, redirect: "/admin" });
+                } else {
+                    // Si el modo es 0, redirigir al home
+                    res.send({ status: "ok", message: "Usuario loggeado", token, redirect: "/home" });
+                }
             });
         });
     } catch (error) {
@@ -61,8 +67,6 @@ async function login(req, res) {
         return res.status(500).send({ status: "Error", message: "Error interno del servidor" });
     }
 }
-
-
 
 async function register(req, res) {
     try {
